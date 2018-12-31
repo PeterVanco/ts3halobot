@@ -71,7 +71,7 @@ registerPlugin({
         sentence = sentence.replace(/\s\s+/g, ' ');
 
         engine.log("Saying: " + sentence);
-        backend.chat(sentence);
+        // backend.chat(sentence);
         sinusbot.say(sentence, "sk");
 
     }, interval);
