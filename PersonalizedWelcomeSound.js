@@ -54,6 +54,13 @@ registerPlugin({
     var media = require('media');
     var audio = require('audio');
 
+    var check = function (member) {
+        if (typeof member == 'undefined')
+            return false;
+        else
+            return member;
+    }
+
     if (!config || typeof config.channelId == 'undefined' || !config.channelId) {
         engine.log("Channel settings invalid. Script not loaded.");
         return;
@@ -94,13 +101,6 @@ registerPlugin({
             return match[2];
         else
             return null;
-    }
-
-    var check = function (member) {
-        if (typeof member == 'undefined')
-            return false;
-        else
-            return member;
     }
 
     var welcome = function (track) {
