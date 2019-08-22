@@ -42,6 +42,11 @@ registerPlugin({
             placeholder: 'Search for track...'
         },
         {
+            name: 'kickunknown',
+            title: 'Kick unknown clients',
+            type: 'checkbox'
+        },
+        {
             name: 'resume',
             title: 'Resume last track or stream after welcomesound',
             type: 'checkbox'
@@ -94,6 +99,7 @@ registerPlugin({
     var resumePlaylist = false;
     var resumePos = 0;
     var securejoin = true;
+    var clientToKick = null;
 
     var getUUID = function (url) {
         var match = url.match(/track:\/\/(\.)?(.[^/:]+)/i);
@@ -110,13 +116,10 @@ registerPlugin({
             resumePos = check(audio.getTrackPosition());
             resumeTrack = currentTrack;
             resumePlaylist = (check(media.getActivePlaylist())) ? check(media.getActivePlaylist().id()) : false;
-            media.playURL(track.url + '&callback=personalizedwelcomesound&copy=true');
         } else if (resumePlayback) {
             securejoin = false;
-            media.playURL(track.url + '&callback=personalizedwelcomesound&copy=true');
-        } else {
-            media.playURL(track.url);
         }
+        media.playURL(track.url + '&callback=personalizedwelcomesound&copy=true');
     }
 
     event.on('clientMove', function (ev) {
@@ -135,6 +138,10 @@ registerPlugin({
             }
             engine.log("No welcome message for client " + ev.client.nick() + ". Using default, if defined.");
             if (check(config.defaulttrack)) {
+                if (config.kickunknown) {
+                    clientToKick = ev.client
+                    engine.log("Scheduling client kick");
+                }
                 welcome(config.defaulttrack)
             }
         } else {
@@ -143,6 +150,11 @@ registerPlugin({
     });
 
     event.on('trackEnd', function (ev, callback) {
+        if (check(callback) == 'personalizedwelcomesound' && clientToKick != null) {
+            engine.log("Kicking client");
+            clientToKick.kickFromServer("Surprise!")
+            clientToKick = null
+        }
         if (check(callback) == 'personalizedwelcomesound' && resumePlayback) {
             if (securejoin && resumeTrack) {
                 engine.log("Resume last track: " + check(resumeTrack.Title()));
